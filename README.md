@@ -13,7 +13,7 @@ These instructions will get you a copy of the project up and running on your loc
 - Dart: Make sure you have Dart installed on your machine. If not, follow the instructions [here](https://dart.dev/get-dart) to install Dart.
 - trakt.tv Account: Create an account on trakt.tv and generate an API key for accessing trakt.tv API.
 
-### Installation
+### Installation and configuration
 
 1. Clone the repository:
     ```
@@ -26,7 +26,16 @@ These instructions will get you a copy of the project up and running on your loc
     pub get
     ```
 
-3. Update the clientId and username variables in the main.dart file with your trakt.tv API client ID and username respectively.
+3. Copy `config.example.json` to `config.json` and edit the file to add your trakt.tv\jellyfin information:
+    ```json
+    {
+        "jellyfinServerUrl": "http://your-jellyfin-server:port",
+        "jellyfinApiKey": "your-jellyfin-api-key",
+        "jellyfinUserId": "your-jellyfin-user-id",
+        "traktApiKey": "your-trakt-api-key",
+        "traktUsername": "your-trakt-username"
+    }
+    ```
 
 ## Usage
 Run the script to fetch your trakt.tv lists and print the names of the lists to the console:

@@ -1,0 +1,7 @@
+{
+    "jellyfinServerUrl": "http://your-jellyfin-server:port",
+    "jellyfinApiKey": "your-jellyfin-api-key",
+    "jellyfinUserId": "your-jellyfin-user-id",
+    "traktApiKey": "your-trakt-api-key",
+    "traktUsername": "your-trakt-username"
+}
