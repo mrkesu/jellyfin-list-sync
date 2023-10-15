@@ -12,42 +12,52 @@ void main() async {
     config['traktUsername'],
   );
 
-final jellyfinSearcher = JellyfinSearcher(
+  final jellyfin = Jellyfin(
     config['jellyfinServerUrl'],
     config['jellyfinApiKey'],
     config['jellyfinUserId'],
   );
 
-  final lists = await traktTVFetcher.fetchTraktTVLists();
+  final traktLists = await traktTVFetcher.fetchTraktTVLists();
+  await jellyfin.fetchAllMedia();
 
-  if (lists != null) {
-    for (var list in lists) {
+  if (traktLists != null) {
+
+    for (var list in traktLists) {
+
+      List<String> jellyfinMediaIds = [];
+      
       final listId = list['ids']['trakt'].toString();
-
-      if (list['name'] != 'mdblist-horrors') {
-        continue;
-      }
 
       print('List Name: ${list['name']}');
 
-      final movies = await traktTVFetcher.fetchMoviesInList(listId);
-      if (movies != null) {
-        for (var movie in movies) {
-          // print(
-          //     'Movie Title: ${movie['movie']['title']}\t\t tmdbId: ${movie['movie']['ids']['tmdb']}');
+      final traktMedias = await traktTVFetcher.fetchMoviesInList(listId);
+      if (traktMedias != null) {
+        for (var traktMedia in traktMedias) {
+          // I'll only handle movies for now.
+          if (traktMedia['type'] != 'movie') {
+            continue;
+          }
 
-          // final tmdbId = movie['movie']['ids']['tmdb'];
-          // final jellyfinMovies =
-          //     await jellyfinSearcher.searchMovieByTmdbId(tmdbId);
-          final movieTitle = movie['movie']['title'];
-          final jellyfinMovies = await jellyfinSearcher.searchMovieByTitle(movieTitle);
+          final Map<String, dynamic>? jellyfinMedia;
+          final tmdbId = traktMedia['movie']['ids']['tmdb'].toString();
+          final movieTitle = traktMedia['movie']['title'];
 
-          if (jellyfinMovies != null && jellyfinMovies.isNotEmpty) {
-            print('Movie found on Jellyfin: ${movie['movie']['title']}');
-            // print(movie['movie']['ids']['tmdb']);
+          if (config['jellyfinSearchMethod'] == 'tmdb') {
+            jellyfinMedia = await jellyfin.searchMediaByTMDBId(tmdbId);
+          } else {
+            jellyfinMedia = await jellyfin.searchMediaByTitle(movieTitle);
+          }
+
+          if (jellyfinMedia != null && jellyfinMedia.isNotEmpty) {
+            jellyfinMediaIds.add(jellyfinMedia['Id'].toString());
+            print(
+                'Media found in Jellyfin. Trakt: ${traktMedia['movie']['title']} - Jellyfin: ${jellyfinMedia['Name']}');
           }
         }
       }
+
+      await jellyfin.createCollection(list['name'], jellyfinMediaIds);
     }
   } else {
     print('Failed to fetch lists.');
