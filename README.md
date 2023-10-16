@@ -34,6 +34,7 @@ These will all need to be set for the container to work since we don't have a co
 | TRAKT_API_KEY | The API key for your trakt.tv account | |
 | TRAKT_USERNAME | The username for your trakt.tv account | |
 | JELLYFIN_SEARCH_METHOD | The search method to use when searching for movies in Jellyfin, can be "tmdb" or "title" | tmdb |
+| INTERVAL_SECONDS | The interval in seconds between each sync | 1800 |
 
 # Build-it-yourself instructions
 
