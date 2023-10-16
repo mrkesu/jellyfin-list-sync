@@ -3,9 +3,25 @@ import 'package:jellyfin_list_sync/trakttv.dart';
 import 'package:jellyfin_list_sync/jellyfin.dart';
 import 'dart:io';
 import 'dart:convert';
+import 'package:args/args.dart';
 
-void main() async {
-  final config = await readConfig();
+ArgResults parseArguments(List<String> arguments) {
+  final parser = ArgParser()
+    ..addOption('jellyfinServerUrl', help: 'Jellyfin server address and port')
+    ..addOption('jellyfinApiKey', help: 'Jellyfin API key')
+    ..addOption('jellyfinUserId', help: 'Jellyfin user ID')
+    ..addOption('traktApiKey', help: 'Trakt.tv API key')
+    ..addOption('traktUsername', help: 'Trakt.tv username')
+    ..addOption('jellyfinSearchMethod',
+        help: 'Search method to use when searching for media in Jellyfin',
+        allowed: ['tmdb', 'title'],
+        defaultsTo: 'tmdb');
+  return parser.parse(arguments);
+}
+
+void main(List<String> arguments) async {
+  final argResults = parseArguments(arguments);
+  final config = await readConfig(argResults);
 
   final traktTVFetcher = TraktTVFetcher(
     config['traktApiKey'],
@@ -22,11 +38,9 @@ void main() async {
   await jellyfin.fetchAllMedia();
 
   if (traktLists != null) {
-
     for (var list in traktLists) {
-
       List<String> jellyfinMediaIds = [];
-      
+
       final listId = list['ids']['trakt'].toString();
 
       print('List Name: ${list['name']}');
@@ -64,10 +78,26 @@ void main() async {
   }
 }
 
-// Read config.json file
-Future<Map<String, dynamic>> readConfig() async {
+// Read config.json file or use arguments
+Future<Map<String, dynamic>> readConfig(ArgResults argResults) async {
   final scriptDir = File(Platform.script.toFilePath()).parent;
   final file = File('${scriptDir.path}/config.json');
-  final contents = await file.readAsString();
-  return json.decode(contents);
+
+  if (await file.exists()) {
+    final contents = await file.readAsString();
+    return json.decode(contents);
+  } else {
+    if (argResults.arguments.isEmpty) {
+      print('No config.json file found and no arguments provided.');
+      exit(1);
+    }
+    return {
+      'jellyfinServerUrl': argResults['jellyfinServerUrl'],
+      'jellyfinApiKey': argResults['jellyfinApiKey'],
+      'jellyfinUserId': argResults['jellyfinUserId'],
+      'traktApiKey': argResults['traktApiKey'],
+      'traktUsername': argResults['traktUsername'],
+      'jellyfinSearchMethod': argResults['jellyfinSearchMethod'],
+    };
+  }
 }

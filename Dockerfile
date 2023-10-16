@@ -1,6 +1,14 @@
 # Specify the Dart SDK base image
 FROM dart:latest AS build
 
+# Set the environment variables
+ENV JELLYFIN_SERVER_URL=""
+ENV JELLYFIN_API_KEY=""
+ENV JELLYFIN_USER_ID=""
+ENV TRAKT_API_KEY=""
+ENV TRAKT_USERNAME=""
+ENV JELLYFIN_SEARCH_METHOD=""
+
 # Set the working directory
 WORKDIR /app
 
@@ -22,7 +30,7 @@ COPY --from=build /bin/config.json /app/config.json
 RUN apt-get update && apt-get install -y cron
 
 # Add the cron job
-RUN echo "0 * * * * /app/jellyfin_list_sync >> /var/log/cron.log 2>&1" | crontab -
+RUN echo "0 * * * * /app/jellyfin_list_sync --jellyfinServerUrl=\$JELLYFIN_SERVER_URL --jellyfinApiKey=\$JELLYFIN_API_KEY --jellyfinUserId=\$JELLYFIN_USER_ID --traktApiKey=\$TRAKT_API_KEY --traktUsername=\$TRAKT_USERNAME --jellyfinSearchMethod=\$JELLYFIN_SEARCH_METHOD >> /var/log/cron.log 2>&1" | crontab -
 
 # Create the log file to be able to run tail
 RUN touch /var/log/cron.log
