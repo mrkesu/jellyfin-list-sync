@@ -3,5 +3,6 @@
     "jellyfinApiKey": "your-jellyfin-api-key",
     "jellyfinUserId": "your-jellyfin-user-id",
     "traktApiKey": "your-trakt-api-key",
-    "traktUsername": "your-trakt-username"
+    "traktUsername": "your-trakt-username",
+    "jellyfinSearchMethod": "tmdb"
 }
