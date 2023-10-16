@@ -1,0 +1,1 @@
+VSCODE dokumentation on settings: https://code.visualstudio.com/docs/getstarted/settings
