@@ -26,7 +26,7 @@ FROM debian:buster-slim
 COPY --from=build /app/jellyfin_list_sync /app/jellyfin_list_sync
 
 # Create entry script
-RUN echo -e "#!/bin/sh\nwhile :; do\n    /app/jellyfin_list_sync --jellyfinServerUrl=\$JELLYFIN_SERVER_URL --jellyfinApiKey=\$JELLYFIN_API_KEY --jellyfinUserId=\$JELLYFIN_USER_ID --traktApiKey=\$TRAKT_API_KEY --traktUsername=\$TRAKT_USERNAME --jellyfinSearchMethod=\$JELLYFIN_SEARCH_METHOD\n    sleep 1800  # Sleep for 1800 seconds (30 minutes)\ndone" > /app/entry.sh && chmod +x /app/entry.sh
+RUN { echo "#!/bin/sh"; echo "while :; do"; echo "    /app/jellyfin_list_sync --jellyfinServerUrl=\$JELLYFIN_SERVER_URL --jellyfinApiKey=\$JELLYFIN_API_KEY --jellyfinUserId=\$JELLYFIN_USER_ID --traktApiKey=\$TRAKT_API_KEY --traktUsername=\$TRAKT_USERNAME --jellyfinSearchMethod=\$JELLYFIN_SEARCH_METHOD"; echo "    sleep 1800"; echo "done"; } > /app/entry.sh && chmod +x /app/entry.sh
 
 # Set the entry script as the entry point
 ENTRYPOINT ["/app/entry.sh"]
