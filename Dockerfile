@@ -16,7 +16,7 @@ FROM debian:buster-slim
 
 # Copy the compiled executable from the build image
 COPY --from=build /app/jellyfin_list_sync /app/jellyfin_list_sync
-COPY --from=build /app/config.json /app/config.json
+COPY --from=build /bin/config.json /app/config.json
 
 # Install cron
 RUN apt-get update && apt-get install -y cron
