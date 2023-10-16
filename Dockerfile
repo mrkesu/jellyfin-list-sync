@@ -1,24 +1,20 @@
-# I have no idea how to make Dockerfiles, I just asked ChatGPT to do it for me and edited this file a little bit
-
-# Use the official Dart image as the base image
-FROM google/dart:latest AS build
-
-# Copy your Dart code into the image
-COPY . /app
+# Specify the Dart SDK base image
+FROM dart:latest AS build
 
 # Set the working directory
 WORKDIR /app
 
-# Get all dependencies
-RUN pub get
+# Copy the project files into the container
+COPY . .
 
-# Compile your Dart code to native executable
+# Get all dependencies and build the project
+RUN dart pub get
 RUN dart compile exe bin/jellyfin_list_sync.dart -o /app/jellyfin_list_sync
 
-# Use a base image with cron installed
+# Use a minimal base image for the runtime
 FROM debian:buster-slim
 
-# Copy the compiled executable from the build image + config file
+# Copy the compiled executable from the build image
 COPY --from=build /app/jellyfin_list_sync /app/jellyfin_list_sync
 COPY --from=build /app/config.json /app/config.json
 
