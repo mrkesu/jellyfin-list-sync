@@ -29,15 +29,7 @@ COPY --from=build /app/jellyfin_list_sync /app/jellyfin_list_sync
 RUN apt-get update && apt-get install -y cron
 
 # Create run script
-RUN echo -e "#!/bin/sh\n\
-    export JELLYFIN_SERVER_URL=\$JELLYFIN_SERVER_URL\n\
-    export JELLYFIN_API_KEY=\$JELLYFIN_API_KEY\n\
-    export JELLYFIN_USER_ID=\$JELLYFIN_USER_ID\n\
-    export TRAKT_API_KEY=\$TRAKT_API_KEY\n\
-    export TRAKT_USERNAME=\$TRAKT_USERNAME\n\
-    export JELLYFIN_SEARCH_METHOD=\$JELLYFIN_SEARCH_METHOD\n\
-    /app/jellyfin_list_sync" >> /app/run_script.sh \
-    && chmod +x /app/run_script.sh
+RUN echo "#!/bin/sh\n/app/jellyfin_list_sync --jellyfinServerUrl=\$JELLYFIN_SERVER_URL --jellyfinApiKey=\$JELLYFIN_API_KEY --jellyfinUserId=\$JELLYFIN_USER_ID --traktApiKey=\$TRAKT_API_KEY --traktUsername=\$TRAKT_USERNAME --jellyfinSearchMethod=\$JELLYFIN_SEARCH_METHOD" > /app/run_script.sh && chmod +x /app/run_script.sh
 
 # Add the cron job
 RUN echo "0 * * * * /app/run_script.sh >> /var/log/cron.log 2>&1" | crontab -
