@@ -70,8 +70,20 @@ void main(List<String> arguments) async {
           }
         }
       }
+      if (jellyfinMediaIds.isEmpty) {
+        print(
+            'No media found in source or Jellyfin. Skipping create or update.');
+        // if we don't have any media, let's delete the playlist
+        // to do that we need to find the playlist id first using findPlaylist then delete it
+        final playlist = await jellyfin.findPlaylist(list['name']);
+        if (playlist != "") {
+          print('Deleting playlist for ${list['name']} with id $playlist');
+          await jellyfin.deletePlaylist(playlist);
+        }
+        continue;
+      }
 
-      await jellyfin.createCollection(list['name'], jellyfinMediaIds);
+      await jellyfin.createPlaylist(list['name'], jellyfinMediaIds);
     }
   } else {
     print('Failed to fetch lists.');

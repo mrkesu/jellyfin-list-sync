@@ -26,7 +26,7 @@ class Jellyfin {
 
   // searchTerm= doesn't work, the API documentation lies.
   // So we just have to get everything and filter it ourselves ¯\_(ツ)_/¯
-  Future<List<dynamic>> getMoviesByParentId(String parentId) async {
+  Future<List<dynamic>> getItemsByParentId(String parentId) async {
     final url = Uri.parse('$serverUrl/Items?userId=$userId&parentId=$parentId');
     final response = await http.get(url, headers: _headers);
     if (response.statusCode == 200) {
@@ -61,28 +61,77 @@ class Jellyfin {
     final initialIds = await getInitialIds();
     var media = <dynamic>[];
     for (String parentId in initialIds) {
-      final mediaInParent = await getMoviesByParentId(parentId);
+      final mediaInParent = await getItemsByParentId(parentId);
       media.addAll(mediaInParent);
     }
     allMedia = media;
   }
 
-  Future<void> createCollection(
-      String collectionName, List<String> movieIds) async {
+  Future<void> createPlaylist(
+      String playlistName, List<String> movieIds) async {
+    var url = Uri.parse('$serverUrl/Playlists');
 
-    // Another thing that made me laugh.
-    // The API documentation says to use a POST request to /Collections,
-    // but all parameteres have to be sent in the URL like a GET ...
-    final idsParameter = movieIds.join(',');
-    final url = Uri.parse(
-        '$serverUrl/Collections?Name=$collectionName&Ids=$idsParameter&api_key=$apiKey');
+    final playlistId = await findPlaylist(playlistName);
+
+    if (playlistId != "") {
+      print('Playlist already exists. Updating playlist id $playlistId.');
+      url = Uri.parse('$serverUrl/Playlists/$playlistId/Items?userId=$userId');
+    }
+
+    final playlistData = {
+      'Name': playlistName,
+      'Ids': movieIds,
+      'UserId': userId,
+    };
+
     final response = await http.post(
       url,
       headers: _headers,
+      body: json.encode(playlistData),
     );
+
+    if (response.statusCode != 200 && response.statusCode != 204) {
+      print(
+          'Failed to create playlist. HTTP status code: ${response.statusCode}');
+    }
+  }
+
+  Future<String> findPlaylist(String playlistName) async {
+    final url = Uri.parse('$serverUrl/Users/$userId/Items/');
+    final response = await http.get(url, headers: _headers);
+    if (response.statusCode == 200) {
+      final playlists = json.decode(response.body)['Items'];
+      final playlistIds = playlists
+          .where((playlist) => playlist['CollectionType'] == 'playlists')
+          .map((playlist) => playlist['Id'].toString())
+          .toList();
+
+      for (String playlistId in playlistIds) {
+        final playlistItems = await getItemsByParentId(playlistId);
+        for (var playlistItem in playlistItems) {
+          if (playlistItem['Name'] == playlistName) {
+            return playlistItem['Id'].toString();
+          }
+        }
+      }
+    } else {
+      print(
+          'Failed to get playlists. HTTP status code: ${response.statusCode}');
+    }
+    return "";
+  }
+
+  Future<void> deletePlaylist(String playlistId) async {
+    final url = Uri.parse('$serverUrl/Playlists/$playlistId');
+
+    final response = await http.delete(
+      url,
+      headers: _headers,
+    );
+
     if (response.statusCode != 200) {
       print(
-          'Failed to create collection. HTTP status code: ${response.statusCode}');
+          'Failed to delete playlist. HTTP status code: ${response.statusCode}');
     }
   }
 
