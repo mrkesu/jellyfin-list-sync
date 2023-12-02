@@ -117,6 +117,8 @@ I have no idea how github releases works, but I want to try it out for this proj
 - [ ] linux executable
 - [ ] mac executable
 
+## Todo
+- Remove *trakt* collections if they are empty on disk
 
 ## Made with
 
